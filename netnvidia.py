@@ -27,20 +27,23 @@ class NVidia:
 
 		self.model.summary()
 
-	def train(self, train_generator, validation_generator, 
-				samples_per_epoch, nb_val_samples):
+	def train_generator(self, train_generator, validation_generator, 
+				steps_per_epoch, validation_steps):
 
 		self.model.compile(loss='mse', optimizer='adam')
 
-		self.model.fit_generator(
-				train_generator, samples_per_epoch=samples_per_epoch, 
-				validation_data=validation_generator, nb_val_samples=nb_val_samples, 
-            	nb_epoch=1)
+		#return the history_object
+		return self.model.fit_generator(
+				train_generator, steps_per_epoch=steps_per_epoch, 
+				validation_data=validation_generator, validation_steps=validation_steps, 
+            	epochs=4)
 
 
 		self.model.save('model.h5')
 
+	def train(self, X_train, y_train):
 
+		self.model.compile(loss='mse', optimizer='adam')
+		self.model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=4)
 
-
-
+		self.model.save('model.h5')
