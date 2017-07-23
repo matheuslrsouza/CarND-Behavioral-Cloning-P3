@@ -32,14 +32,15 @@ class NVidia:
 
 		self.model.compile(loss='mse', optimizer='adam')
 
-		#return the history_object
-		return self.model.fit_generator(
-				train_generator, steps_per_epoch=steps_per_epoch, 
-				validation_data=validation_generator, validation_steps=validation_steps, 
-            	epochs=4)
+		history = self.model.fit_generator(
+						train_generator, steps_per_epoch=steps_per_epoch, 
+						validation_data=validation_generator, validation_steps=validation_steps, 
+		            	epochs=4)
 
 
 		self.model.save('model.h5')
+
+		return history
 
 	def train(self, X_train, y_train):
 
