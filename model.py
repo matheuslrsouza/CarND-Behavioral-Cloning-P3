@@ -2,6 +2,7 @@ import csv
 import cv2
 import numpy as np
 from sklearn.utils import shuffle
+import pickle
 
 samples = []
 
@@ -17,8 +18,9 @@ def load_data(dir_data):
 
 			samples.append(line)
 
-load_data('../../dados_simulador/') # track 1 (2 horario e 1 anti-horario)
-#load_data('../../dados_simulador_extras/')
+load_data('../../mini_train/') # track 1
+
+print("samples ", len(samples))
 
 
 def get_data(samples):
@@ -65,7 +67,7 @@ def get_data_generator(samples, batch_size=32):
 			angles = []
 			for line in batch_samples:
 
-				correction = 0.3
+				correction = 0.2
 
 				steering_center = float(line[3]) #steering
 				steering_left = steering_center + correction
@@ -83,40 +85,26 @@ def get_data_generator(samples, batch_size=32):
 				angles.extend([steering_center])
 				angles.extend([steering_right])
 
-			# trim image to only see section with road
 			X_train = np.array(images)
 			y_train = np.array(angles)
 			yield shuffle(X_train, y_train)
 
 # compile and train the model using the generator function
-batch_size = 256
+batch_size = 32
 train_generator = get_data_generator(train_samples, batch_size=batch_size)
 validation_generator = get_data_generator(validation_samples, batch_size=batch_size)
 
 
-# X_train, y_train = get_data(samples)
-
 from netnvidia import NVidia
 
 network = NVidia()
-#network.train(X_train, y_train)
 history_object = network.train_generator(train_generator, validation_generator, 
 									len(train_samples)/batch_size, 
 									len(validation_samples)/batch_size)
 
-import matplotlib.pyplot as plt
-
-### print the keys contained in the history object
-print(history_object.history.keys())
-
-### plot the training and validation loss for each epoch
-plt.plot(history_object.history['loss'])
-plt.plot(history_object.history['val_loss'])
-plt.title('model mean squared error loss')
-plt.ylabel('mean squared error loss')
-plt.xlabel('epoch')
-plt.legend(['training set', 'validation set'], loc='upper right')
-plt.show()
+### save the history so we can view it at any time. 
+### when we are training on GPU we can't plot 
+pickle.dump(history_object.history, open('loss_history.p', 'wb'))
 
 
 
