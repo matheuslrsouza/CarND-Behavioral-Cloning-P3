@@ -12,17 +12,13 @@ class NVidia:
 		self.model.add(Cropping2D(cropping=((70, 20), (0, 0))))
 
 		self.model.add(Conv2D(24, (5, 5), strides=(2, 2), activation='relu'))
-		self.model.add(Dropout(0.7))
 		self.model.add(Conv2D(36, (5, 5), strides=(2, 2), activation='relu'))
-		self.model.add(Dropout(0.8))
 		self.model.add(Conv2D(48, (5, 5), strides=(2, 2), activation='relu'))
-		self.model.add(Dropout(0.8))
 
 		self.model.add(Conv2D(64, (3, 3), strides=(1, 1), activation='relu'))
 		self.model.add(Conv2D(64, (3, 3), strides=(1, 1), activation='relu'))
 		
-		self.model.add(Flatten())		
-		self.model.add(Dropout(0.7))
+		self.model.add(Flatten())
 		self.model.add(Dense(100, activation='relu'))
 		self.model.add(Dense(50, activation='relu'))
 		self.model.add(Dense(10, activation='relu'))
@@ -40,7 +36,7 @@ class NVidia:
 		history = self.model.fit_generator(
 						train_generator, steps_per_epoch=steps_per_epoch, 
 						validation_data=validation_generator, validation_steps=validation_steps, 
-		            	epochs=1)
+		            	epochs=8)
 
 
 		self.model.save('model.h5')
