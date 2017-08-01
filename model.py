@@ -56,16 +56,7 @@ def get_data(samples):
 from sklearn.model_selection import train_test_split
 train_samples, validation_samples = train_test_split(samples, test_size=0.2)
 
-from keras.preprocessing.image import ImageDataGenerator
-
-datagen = ImageDataGenerator(
-		rescale=1./255,
-        shear_range=0.2,
-        zoom_range=0.2,
-        horizontal_flip=True
-	)
-
-def get_data_generator(samples, batch_size=32):
+def get_data_generator(samples, imgage_generator, batch_size=32):
 	num_samples = len(samples)
 	while 1: # Loop forever so the generator never terminates
 		shuffle(samples)
@@ -100,16 +91,17 @@ def get_data_generator(samples, batch_size=32):
 
 			#print("shape before aug", X_train.shape)
 			
+			
 			batches = 0
-			for X_batch, y_batch in datagen.flow(X_train, y_train, batch_size=len(X_train)):
+			for X_batch, y_batch in imgage_generator.flow(X_train, y_train, batch_size=len(X_train)):
 				batches += 1
 
-				X_train = np.concatenate((X_train, X_batch), axis=0)
-				y_train = np.concatenate((y_train, y_batch), axis=0)
+				#X_train = np.concatenate((X_train, X_batch), axis=0)
+				#y_train = np.concatenate((y_train, y_batch), axis=0)
+				X_train = X_batch
+				y_train = y_batch
 
-				#maximum 2 times the size of train data
-				if batches == 2:
-					break
+				break
 
 			#print("shape after aug", X_train.shape)
 			
@@ -119,11 +111,21 @@ def get_data_generator(samples, batch_size=32):
 # compile and train the model using the generator function
 batch_size = 32
 
+from keras.preprocessing.image import ImageDataGenerator
 
+train_datagen = ImageDataGenerator(
+		rescale=1./255,
+        shear_range=0.2,
+        zoom_range=0.2,
+        horizontal_flip=True
+	)
 
+validation_datagen = ImageDataGenerator(
+		rescale=1./255
+	)
 
-train_generator = get_data_generator(train_samples, batch_size=batch_size)
-validation_generator = get_data_generator(validation_samples, batch_size=batch_size)
+train_generator = get_data_generator(train_samples, train_datagen, batch_size=batch_size)
+validation_generator = get_data_generator(validation_samples, validation_datagen, batch_size=batch_size)
 
 
 from netnvidia import NVidia
