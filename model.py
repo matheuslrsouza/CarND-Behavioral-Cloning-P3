@@ -56,6 +56,15 @@ def get_data(samples):
 from sklearn.model_selection import train_test_split
 train_samples, validation_samples = train_test_split(samples, test_size=0.2)
 
+from keras.preprocessing.image import ImageDataGenerator
+
+datagen = ImageDataGenerator(
+		rescale=1./255,
+        shear_range=0.2,
+        zoom_range=0.2,
+        horizontal_flip=True
+	)
+
 def get_data_generator(samples, batch_size=32):
 	num_samples = len(samples)
 	while 1: # Loop forever so the generator never terminates
@@ -77,20 +86,42 @@ def get_data_generator(samples, batch_size=32):
 				image_left = cv2.imread(line[1])
 				image_right = cv2.imread(line[2])
 				
-				images.extend([image_left])
-				images.extend([image_center])
-				images.extend([image_right])
+				images.append(image_left)
+				images.append(image_center)
+				images.append(image_right)
 
-				angles.extend([steering_left])
-				angles.extend([steering_center])
-				angles.extend([steering_right])
+				angles.append(steering_left)
+				angles.append(steering_center)
+				angles.append(steering_right)
 
+			
 			X_train = np.array(images)
 			y_train = np.array(angles)
+
+			#print("shape before aug", X_train.shape)
+			
+			batches = 0
+			for X_batch, y_batch in datagen.flow(X_train, y_train, batch_size=len(X_train)):
+				batches += 1
+
+				X_train = np.concatenate((X_train, X_batch), axis=0)
+				y_train = np.concatenate((y_train, y_batch), axis=0)
+
+				#maximum 2 times the size of train data
+				if batches == 2:
+					break
+
+			#print("shape after aug", X_train.shape)
+			
+
 			yield shuffle(X_train, y_train)
 
 # compile and train the model using the generator function
 batch_size = 32
+
+
+
+
 train_generator = get_data_generator(train_samples, batch_size=batch_size)
 validation_generator = get_data_generator(validation_samples, batch_size=batch_size)
 
@@ -98,6 +129,25 @@ validation_generator = get_data_generator(validation_samples, batch_size=batch_s
 from netnvidia import NVidia
 
 network = NVidia()
+
+n_epochs = 3
+
+'''
+for e in range(n_epochs):
+
+	print("epoch %d" % e)
+
+	for X_train, y_train in get_data_generator(train_samples, batch_size=256):
+		batches = 0
+		for X_batch, Y_batch in datagen.flow(X_train, y_train, batch_size=batch_size):
+			loss = model.fit(X_batch, Y_batch)
+			#print("loss %0.4f" % loss)
+			print("%d / %d" % (batches , len(X_train) / batch_size))
+			batches += 1
+			if batches >= len(X_train) / batch_size:
+				break
+
+'''
 history_object = network.train_generator(train_generator, validation_generator, 
 									len(train_samples)/batch_size, 
 									len(validation_samples)/batch_size)
