@@ -56,7 +56,7 @@ def get_data(samples):
 from sklearn.model_selection import train_test_split
 train_samples, validation_samples = train_test_split(samples, test_size=0.2)
 
-def get_data_generator(samples, imgage_generator, batch_size=32):
+def get_data_generator(samples, batch_size=32):
 	num_samples = len(samples)
 	while 1: # Loop forever so the generator never terminates
 		shuffle(samples)
@@ -73,10 +73,10 @@ def get_data_generator(samples, imgage_generator, batch_size=32):
 				steering_left = steering_center + correction
 				steering_right = steering_center - correction
 
-				image_center = cv2.imread(line[0])
 				image_left = cv2.imread(line[1])
+				image_center = cv2.imread(line[0])
 				image_right = cv2.imread(line[2])
-				
+
 				images.append(image_left)
 				images.append(image_center)
 				images.append(image_right)
@@ -85,26 +85,39 @@ def get_data_generator(samples, imgage_generator, batch_size=32):
 				angles.append(steering_center)
 				angles.append(steering_right)
 
-			
+				#augment data
+				images.append(cv2.flip(image_center, 1))
+				angles.append(steering_center * -1.0)
+
+				images.append(cv2.flip(image_left, 1))
+				angles.append(steering_left * -1.0)
+
+				images.append(cv2.flip(image_right, 1))
+				angles.append(steering_right * -1.0)
+
+				#cv2.imwrite('preview/original.jpg', image_center)
+				#cv2.imwrite('preview/flip.jpg', cv2.flip(image_center, 1))
+
 			X_train = np.array(images)
 			y_train = np.array(angles)
 
 			#print("shape before aug", X_train.shape)
-			
-			
+			'''
 			batches = 0
-			for X_batch, y_batch in imgage_generator.flow(X_train, y_train, batch_size=len(X_train)):
+			for X_batch, y_batch in imgage_generator.flow(X_train, y_train, batch_size=len(X_train), 
+					save_to_dir='preview', save_format='jpeg'):
 				batches += 1
 
 				#X_train = np.concatenate((X_train, X_batch), axis=0)
 				#y_train = np.concatenate((y_train, y_batch), axis=0)
+				#print(offset, '-----', offset+batch_size)
 				X_train = X_batch
 				y_train = y_batch
 
 				break
 
 			#print("shape after aug", X_train.shape)
-			
+			'''
 
 			yield shuffle(X_train, y_train)
 
@@ -114,18 +127,16 @@ batch_size = 32
 from keras.preprocessing.image import ImageDataGenerator
 
 train_datagen = ImageDataGenerator(
-		rescale=1./255,
-        shear_range=0.2,
-        zoom_range=0.2,
-        horizontal_flip=True
+	zoom_range=0.5, 
+	fill_mode='constant'
 	)
 
 validation_datagen = ImageDataGenerator(
-		rescale=1./255
+		rescale=None
 	)
 
-train_generator = get_data_generator(train_samples, train_datagen, batch_size=batch_size)
-validation_generator = get_data_generator(validation_samples, validation_datagen, batch_size=batch_size)
+train_generator = get_data_generator(train_samples, batch_size=batch_size)
+validation_generator = get_data_generator(validation_samples, batch_size=batch_size)
 
 
 from netnvidia import NVidia
