@@ -18,7 +18,13 @@ def load_data(dir_data):
 
 			samples.append(line)
 
-load_data('../../mini_train/') # track 1
+load_data('../track1/') # track 1
+load_data('../track1_1/')
+load_data('../track1_2/')
+load_data('../track1_3/')
+load_data('../track1_4/')
+load_data('../track1_5/')
+load_data('../track1_6/')
 
 print("samples ", len(samples))
 
@@ -86,6 +92,7 @@ def get_data_generator(samples, batch_size=32):
 				angles.append(steering_right)
 
 				#augment data
+				'''
 				images.append(cv2.flip(image_center, 1))
 				angles.append(steering_center * -1.0)
 
@@ -94,7 +101,7 @@ def get_data_generator(samples, batch_size=32):
 
 				images.append(cv2.flip(image_right, 1))
 				angles.append(steering_right * -1.0)
-
+				'''
 				#cv2.imwrite('preview/original.jpg', image_center)
 				#cv2.imwrite('preview/flip.jpg', cv2.flip(image_center, 1))
 
