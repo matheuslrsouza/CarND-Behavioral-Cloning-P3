@@ -25,6 +25,7 @@ load_data('../track1_3/')
 load_data('../track1_4/')
 load_data('../track1_5/')
 load_data('../track1_6/')
+load_data('../track2/')
 
 print("samples ", len(samples))
 
