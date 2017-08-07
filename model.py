@@ -92,56 +92,13 @@ def get_data_generator(samples, batch_size=32):
 				angles.append(steering_center)
 				angles.append(steering_right)
 
-				#augment data
-				'''
-				images.append(cv2.flip(image_center, 1))
-				angles.append(steering_center * -1.0)
-
-				images.append(cv2.flip(image_left, 1))
-				angles.append(steering_left * -1.0)
-
-				images.append(cv2.flip(image_right, 1))
-				angles.append(steering_right * -1.0)
-				'''
-				#cv2.imwrite('preview/original.jpg', image_center)
-				#cv2.imwrite('preview/flip.jpg', cv2.flip(image_center, 1))
-
 			X_train = np.array(images)
 			y_train = np.array(angles)
-
-			#print("shape before aug", X_train.shape)
-			'''
-			batches = 0
-			for X_batch, y_batch in imgage_generator.flow(X_train, y_train, batch_size=len(X_train), 
-					save_to_dir='preview', save_format='jpeg'):
-				batches += 1
-
-				#X_train = np.concatenate((X_train, X_batch), axis=0)
-				#y_train = np.concatenate((y_train, y_batch), axis=0)
-				#print(offset, '-----', offset+batch_size)
-				X_train = X_batch
-				y_train = y_batch
-
-				break
-
-			#print("shape after aug", X_train.shape)
-			'''
-
+			
 			yield shuffle(X_train, y_train)
 
 # compile and train the model using the generator function
 batch_size = 32
-
-from keras.preprocessing.image import ImageDataGenerator
-
-train_datagen = ImageDataGenerator(
-	zoom_range=0.5, 
-	fill_mode='constant'
-	)
-
-validation_datagen = ImageDataGenerator(
-		rescale=None
-	)
 
 train_generator = get_data_generator(train_samples, batch_size=batch_size)
 validation_generator = get_data_generator(validation_samples, batch_size=batch_size)
@@ -151,24 +108,6 @@ from netnvidia import NVidia
 
 network = NVidia()
 
-n_epochs = 3
-
-'''
-for e in range(n_epochs):
-
-	print("epoch %d" % e)
-
-	for X_train, y_train in get_data_generator(train_samples, batch_size=256):
-		batches = 0
-		for X_batch, Y_batch in datagen.flow(X_train, y_train, batch_size=batch_size):
-			loss = model.fit(X_batch, Y_batch)
-			#print("loss %0.4f" % loss)
-			print("%d / %d" % (batches , len(X_train) / batch_size))
-			batches += 1
-			if batches >= len(X_train) / batch_size:
-				break
-
-'''
 history_object = network.train_generator(train_generator, validation_generator, 
 									len(train_samples)/batch_size, 
 									len(validation_samples)/batch_size)

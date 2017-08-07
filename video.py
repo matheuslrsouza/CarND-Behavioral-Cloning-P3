@@ -1,5 +1,6 @@
 from moviepy.editor import ImageSequenceClip
 import argparse
+import glob
 
 
 def main():
@@ -19,7 +20,10 @@ def main():
 
     video_file = args.image_folder + '.mp4'
     print("Creating video {}, FPS={}".format(video_file, args.fps))
-    clip = ImageSequenceClip(args.image_folder, fps=args.fps)
+
+    images = glob.glob('./'+args.image_folder+'/*.jpg')
+
+    clip = ImageSequenceClip(images, fps=args.fps)
     clip.write_videofile(video_file)
 
 
