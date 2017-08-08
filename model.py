@@ -26,6 +26,7 @@ load_data('../track1_4/')
 load_data('../track1_5/')
 load_data('../track1_6/')
 load_data('../track2/')
+load_data('../track2_1/')
 
 print("samples ", len(samples))
 
@@ -84,18 +85,26 @@ def get_data_generator(samples, batch_size=32):
 				image_center = cv2.imread(line[0])
 				image_right = cv2.imread(line[2])
 
-				images.append(image_left)
-				images.append(image_center)
-				images.append(image_right)
-
-				angles.append(steering_left)
-				angles.append(steering_center)
-				angles.append(steering_right)
+				split_yuv_and_add(images, angles, image_left, steering_left)
+				split_yuv_and_add(images, angles, image_center, steering_center)
+				split_yuv_and_add(images, angles, image_right, steering_right)
 
 			X_train = np.array(images)
 			y_train = np.array(angles)
 			
 			yield shuffle(X_train, y_train)
+
+def split_yuv_and_add(images, angles, img, steering):
+	yuv = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
+	y, u, v = cv2.split(yuv)
+	images.append(y.reshape(160, 320, -1))
+	images.append(u.reshape(160, 320, -1))
+	images.append(v.reshape(160, 320, -1))
+
+	angles.append(steering)
+	angles.append(steering)
+	angles.append(steering)
+
 
 # compile and train the model using the generator function
 batch_size = 32
