@@ -1,2 +1,6 @@
 __pycache__/
 .DS_Store
+run_track1/
+run_track1_salient/
+run_track2/
+run_track2_salient/
